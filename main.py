@@ -32,7 +32,6 @@ class CreatingAssets():
         """
         if not os.path.exists(path):
             os.makedirs(path)
-            self.logger.info(f"Assets created successfully at: {path}")
 
     def setup_logging(self) -> None:
         """
@@ -44,10 +43,9 @@ class CreatingAssets():
         assigns it to `self.logger`.
         """
         logging.basicConfig(filename=self.log_path, filemode='a',
-                            format='%(asctime)s - %(levelname)s - %(message)s',
+                            format='%(asctime)s - %(levelname)s [ %(message)s ]',
+                            datefmt="%Y-%m-%d %H:%M:%S",
                             level=logging.INFO)
-        self.logger = logging.getLogger("User")
-        return self.logger
 
     def setup_config(self) -> None:
         """
@@ -59,11 +57,12 @@ class CreatingAssets():
         Raises:
             OSError: If the file cannot be opened for writing.
         """
-        with open(self.config_path, 'w') as file:
-            file.write(json.dumps({ # Here we used this way because when we use write method the method because it is in w mode it creates the config file
-                "Version": __version__,
-                "Creation_Date": str(datetime.now()),
-            }, indent=4))
+        if not os.path.exists(self.config_path):
+            with open(self.config_path, 'w') as file:
+                file.write(json.dumps({ # Here we used this way because when we use write method the method because it is in w mode it creates the config file
+                    "Version": __version__,
+                    "Creation_Date": str(datetime.now()),
+                }, indent=4))
 
     def setup_db(self) -> None:
         """
@@ -80,6 +79,7 @@ class DbManager():
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
+        self.logger = logging.getLogger("DbManager")
 
     def create_table(self, table_name, columns: dict) -> None:
         """
@@ -144,20 +144,29 @@ class JsonManager():
 
     def __init__(self, json_path: str = "config.json"):
         self.json_path = json_path
+        self.logger = logging.getLogger("JsonManager")
 
     def load_config(self):
-        with open(self.json_path, "r", encoding="utf-8") as file:
+        with open(self.json_path, "r") as file:
             try:
                 data = json.load(file)
-            except json.JSONDecodeError:
-                data = {}
-            except FileNotFoundError:
-                return "File not found"
-        return data
+            except json.decoder.JSONDecodeError as JSOND:
+                print("Reading From Empty File.")
+                data = {"Error": JSOND}
+            except Exception as Error:
+                print("Error Happened.")
+                data = {"Error": Error}
+            finally:
+                self.logger.info("Config Loaded.")
+                return data
+        
 
     def save_config(self, data: dict):
-        with open(self.json_path, "a", encoding="utf-8") as file:
-            json.dump(data, file, indent=4)
+        data_exist = self.load_config()
+        data_exist.update(data)
+        with open(self.json_path, "w", encoding="utf-8") as file:
+            json.dump(data_exist, file, indent=4)
+        self.logger.info("Config Updated.")
 
 if __name__ == "__main__":
 
@@ -172,3 +181,6 @@ if __name__ == "__main__":
     manager.setup_db()
     logger = manager.setup_logging()
     manager.setup_config()
+
+    config = JsonManager(CONFIG_PATH)
+    config.save_config({1: "omar"})
