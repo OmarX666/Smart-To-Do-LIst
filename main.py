@@ -12,7 +12,7 @@ import seaborn as sns
 import numpy as np
 
 class CreatingAssets():
-    def __init__(self, db_path='assets.db', config_path='config.json', log_path='logs.log'):
+    def __init__(self, db_path='UserInfo.db', config_path='config.json', log_path='logs.log'):
         self.db_path = db_path
         self.config_path = config_path
         self.log_path = log_path
@@ -62,6 +62,11 @@ class CreatingAssets():
                 file.write(json.dumps({ # Here we used this way because when we use write method the method because it is in w mode it creates the config file
                     "Version": __version__,
                     "Creation_Date": str(datetime.now()),
+                    "User_Data":{
+                        "Name": "",
+                        "Email": "",
+                        "Password": "",
+                    },
                 }, indent=4))
 
     def setup_db(self) -> None:
@@ -75,7 +80,7 @@ class CreatingAssets():
             pass
 
 class DbManager():
-    def __init__(self, db_path='assets.db'):
+    def __init__(self, db_path='UserInfo.db'):
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
@@ -172,7 +177,7 @@ if __name__ == "__main__":
 
     MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
     ASSETS_DIR = os.path.join(MAIN_DIR, 'assets')
-    DB_PATH = os.path.join(ASSETS_DIR, 'assets.db')
+    DB_PATH = os.path.join(ASSETS_DIR, 'UserInfo.db')
     CONFIG_PATH = os.path.join(ASSETS_DIR, 'config.json')
     LOGS_PATH = os.path.join(ASSETS_DIR, 'logs.log')
 
@@ -181,6 +186,3 @@ if __name__ == "__main__":
     manager.setup_db()
     logger = manager.setup_logging()
     manager.setup_config()
-
-    config = JsonManager(CONFIG_PATH)
-    config.save_config({1: "omar"})
