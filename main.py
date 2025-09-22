@@ -166,6 +166,14 @@ class JsonManager():
             finally:
                 self.logger.info("Config Loaded.")
                 return data
+
+    def save_config(self, data: dict):
+        data_exist = self.load_config()
+        data_exist.update(data)
+        with open(self.json_path, "w", encoding="utf-8") as file:
+            json.dump(data_exist, file, indent=4)
+        self.logger.info("Config Updated.")
+
 class SignUp():
     pass
 
@@ -174,14 +182,6 @@ class SignIn():
 
 class mainApp():
     pass
-
-
-    def save_config(self, data: dict):
-        data_exist = self.load_config()
-        data_exist.update(data)
-        with open(self.json_path, "w", encoding="utf-8") as file:
-            json.dump(data_exist, file, indent=4)
-        self.logger.info("Config Updated.")
 
 if __name__ == "__main__":
 
