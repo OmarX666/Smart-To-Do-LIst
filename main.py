@@ -12,12 +12,13 @@ import seaborn as sns
 import numpy as np
 
 class CreatingAssets():
-    def __init__(self, db_path='UserInfo.db', config_path='config.json', log_path='logs.log'):
+    def __init__(self, assets_folder='assets', db_path='UserInfo.db', config_path='config.json', log_path='logs.log'):
+        self.assets_folder = assets_folder
         self.db_path = db_path
         self.config_path = config_path
         self.log_path = log_path
 
-    def create_dir(self, path) -> None:
+    def create_dir(self) -> None:
         """
         Creates a directory at the specified path if it does not already exist.
 
@@ -30,8 +31,8 @@ class CreatingAssets():
         Raises:
             OSError: If the directory cannot be created and does not already exist.
         """
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(self.assets_folder):
+            os.makedirs(self.assets_folder)
 
     def setup_logging(self) -> None:
         """
@@ -63,7 +64,8 @@ class CreatingAssets():
                     "Version": __version__,
                     "Creation_Date": str(datetime.now()),
                     "User_Data":{
-                        "Name": "",
+                        "ID": "",
+                        "Username": "",
                         "Email": "",
                         "Password": "",
                     },
@@ -164,7 +166,15 @@ class JsonManager():
             finally:
                 self.logger.info("Config Loaded.")
                 return data
-        
+class SignUp():
+    pass
+
+class SignIn():
+    pass
+
+class mainApp():
+    pass
+
 
     def save_config(self, data: dict):
         data_exist = self.load_config()
@@ -181,8 +191,8 @@ if __name__ == "__main__":
     CONFIG_PATH = os.path.join(ASSETS_DIR, 'config.json')
     LOGS_PATH = os.path.join(ASSETS_DIR, 'logs.log')
 
-    manager = CreatingAssets(DB_PATH, CONFIG_PATH, LOGS_PATH)
-    manager.create_dir(ASSETS_DIR)
+    manager = CreatingAssets(ASSETS_DIR, DB_PATH, CONFIG_PATH, LOGS_PATH)
+    manager.create_dir()
     manager.setup_db()
-    logger = manager.setup_logging()
+    manager.setup_logging()
     manager.setup_config()
