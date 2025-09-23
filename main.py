@@ -12,7 +12,8 @@ import seaborn as sns
 import numpy as np
 
 class CreatingAssets():
-    def __init__(self, assets_folder='assets', db_path='UserInfo.db', config_path='config.json', log_path='logs.log'):
+    def __init__(self, assets_folder='assets', 
+                 db_path='UserInfo.db', config_path='config.json', log_path='logs.log'):
         self.assets_folder = assets_folder
         self.db_path = db_path
         self.config_path = config_path
@@ -153,7 +154,12 @@ class JsonManager():
         self.json_path = json_path
         self.logger = logging.getLogger("JsonManager")
 
-    def load_config(self):
+    def load_config(self) -> dict:
+        """
+        Loads and returns the JSON configuration from the specified file.
+        Returns:
+            dict: The JSON data as a dictionary. If the file is empty or an error occurs
+        """
         with open(self.json_path, "r") as file:
             try:
                 data = json.load(file)
@@ -167,12 +173,36 @@ class JsonManager():
                 self.logger.info("Config Loaded.")
                 return data
 
-    def save_config(self, data: dict):
+    def add_data(self, data: dict) -> None:
+        """
+        Adds new data to the existing JSON configuration.
+        Args:
+            data (dict): A dictionary containing the new data to be added.
+        Returns:
+            None
+        """
         data_exist = self.load_config()
         data_exist.update(data)
         with open(self.json_path, "w", encoding="utf-8") as file:
             json.dump(data_exist, file, indent=4)
         self.logger.info("Config Updated.")
+
+    def delete_data(self, key: str) -> None:
+        """
+        Deletes a key-value pair from the JSON configuration based on the provided key.
+        Args:
+            key (str): The key to be deleted from the configuration.
+        Returns:
+            None
+        """
+        data_exist = self.load_config()
+        if key in data_exist:
+            del data_exist[key]
+            with open(self.json_path, "w", encoding="utf-8") as file:
+                json.dump(data_exist, file, indent=4)
+            self.logger.info("Key Deleted From Config.")
+        else:
+            self.logger.warning("Key Not Found In Config.")
 
 class SignUp():
     pass
@@ -186,11 +216,11 @@ class mainApp():
         self.logger = logging.getLogger("mainApp")
 
     def run(self):
+        """Runs the main application logic."""
         config = self.config_manager.load_config()
         user_data = config.get("User_Data")
-        print(user_data)
-        self.logger.info("App is Running.")
 
+        self.logger.info("App is Running.")
 
 if __name__ == "__main__":
 
