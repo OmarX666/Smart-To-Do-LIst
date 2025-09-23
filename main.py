@@ -210,20 +210,9 @@ class SignUp():
 class SignIn():
     pass
 
-class mainApp():
-    def __init__(self): 
-        self.config_manager = JsonManager(CONFIG_PATH)
-        self.logger = logging.getLogger("mainApp")
 
-    def run(self):
-        """Runs the main application logic."""
-        config = self.config_manager.load_config()
-        user_data = config.get("User_Data")
-
-        self.logger.info("App is Running.")
-
-if __name__ == "__main__":
-
+def main():
+    """ Main function to run the application. """
     MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
     ASSETS_DIR = os.path.join(MAIN_DIR, 'assets')
     DB_PATH = os.path.join(ASSETS_DIR, 'UserInfo.db')
@@ -236,5 +225,5 @@ if __name__ == "__main__":
     manager.setup_logging()
     manager.setup_config()
 
-    app = mainApp()
-    app.run()
+if __name__ == "__main__":
+    main()
