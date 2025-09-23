@@ -3,6 +3,7 @@ __version__ = "0.1.0"
 import json, sqlite3, logging, os
 from datetime import datetime
 import random, re, time, sys
+from winreg import CreateKey
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -19,23 +20,10 @@ class CreatingAssets():
         self.config_path = config_path
         self.log_path = log_path
 
-    def create_dir(self) -> None:
-        """
-        Creates a directory at the specified path if it does not already exist.
+        # Create the assets folder if it does not exist
+        os.makedirs(self.assets_folder)
 
-        Args:
-            path (str): The path where the directory should be created.
-
-        Returns:
-            None
-
-        Raises:
-            OSError: If the directory cannot be created and does not already exist.
-        """
-        if not os.path.exists(self.assets_folder):
-            os.makedirs(self.assets_folder)
-
-    def setup_logging(self) -> None:
+    def create_logging(self) -> None:
         """
         Configures the logging settings for the application.
 
@@ -49,36 +37,18 @@ class CreatingAssets():
                             datefmt="%Y-%m-%d %H:%M:%S",
                             level=logging.INFO)
 
-    def setup_config(self) -> None:
+    def create_config(self) -> None:
         """
-        Initializes or resets the configuration file at the specified path.
-
-        This method opens the configuration file in write mode, effectively creating
-        a new file or clearing the existing one. No content is written to the file.
-
-        Raises:
-            OSError: If the file cannot be opened for writing.
+        Create config file
         """
-        if not os.path.exists(self.config_path):
-            with open(self.config_path, 'w') as file:
-                file.write(json.dumps({ # Here we used this way because when we use write method the method because it is in w mode it creates the config file
-                    "Version": __version__,
-                    "Creation_Date": str(datetime.now()),
-                    "User_Data":{
-                        "ID": "",
-                        "Username": "",
-                        "Email": "",
-                        "Password": "",
-                    },
-                }, indent=4))
+        with open(self.config_path, 'w') as file:
+            pass
 
-    def setup_db(self) -> None:
+    def create_db(self) -> None:
         """
-        Creates a new, empty database file at the specified path.
+        Create database file
+        """
 
-        This method opens the file located at self.db_path in write mode, effectively creating
-        the file if it does not exist or truncating it if it does. The file is left empty.
-        """
         with open(self.db_path, 'w') as f:
             pass
 
@@ -204,6 +174,41 @@ class JsonManager():
         else:
             self.logger.warning("Key Not Found In Config.")
 
+class setup_environment(DbManager, JsonManager):
+    def __init__(self, db_path, config_path):
+        super().__init__(db_path, config_path)
+        self.logger = logging.getLogger("setup_environment")
+        self.logger.info("Environment setup completed")
+        
+    def setup_config(self) -> None:
+        """ Setup config file """
+                
+        initial_config = {
+            "Version": __version__,
+            "Creation_Date": str(datetime.now()),
+            "User_Data": {
+                "ID": "",
+                "Username": "",
+                "Email": "",
+                "Password": "",
+            }
+        }
+
+        self.add_data(initial_config)
+        self.logger.info("Config file environment setup completed")
+
+    def setup_db(self) -> None:
+        """ Setup database file """
+
+        self.create_table("users", {
+            "ID": "INTEGER PRIMARY KEY",
+            "Username": "TEXT",
+            "Email": "TEXT",
+            "Password": "TEXT",
+        })
+
+        self.logger.info("Database file environment setup completed")
+
 class SignUp():
     pass
 
@@ -213,17 +218,31 @@ class SignIn():
 
 def main():
     """ Main function to run the application. """
+
+    manager = CreatingAssets(ASSETS_DIR, DB_PATH, CONFIG_PATH, LOGS_PATH)
+
+    if not os.path.exists(ASSETS_DIR) or \
+    not os.path.exists(DB_PATH) or \
+    not os.path.exists(CONFIG_PATH):
+
+        manager.create_logging()
+        manager.create_db()
+        manager.create_config()
+
+        setup_env = setup_environment(DB_PATH, CONFIG_PATH)
+        setup_env.setup_db()
+        setup_env.setup_config()
+    
+    elif not os.path.exists(LOGS_PATH): # To avoid clearing Json file if logging file is not created
+        manager.create_logging()
+
+
+if __name__ == "__main__":
+
     MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
     ASSETS_DIR = os.path.join(MAIN_DIR, 'assets')
     DB_PATH = os.path.join(ASSETS_DIR, 'UserInfo.db')
     CONFIG_PATH = os.path.join(ASSETS_DIR, 'config.json')
     LOGS_PATH = os.path.join(ASSETS_DIR, 'logs.log')
 
-    manager = CreatingAssets(ASSETS_DIR, DB_PATH, CONFIG_PATH, LOGS_PATH)
-    manager.create_dir()
-    manager.setup_db()
-    manager.setup_logging()
-    manager.setup_config()
-
-if __name__ == "__main__":
     main()
