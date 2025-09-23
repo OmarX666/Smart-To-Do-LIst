@@ -181,7 +181,16 @@ class SignIn():
     pass
 
 class mainApp():
-    pass
+    def __init__(self): 
+        self.config_manager = JsonManager(CONFIG_PATH)
+        self.logger = logging.getLogger("mainApp")
+
+    def run(self):
+        config = self.config_manager.load_config()
+        user_data = config.get("User_Data")
+        print(user_data)
+        self.logger.info("App is Running.")
+
 
 if __name__ == "__main__":
 
@@ -196,3 +205,6 @@ if __name__ == "__main__":
     manager.setup_db()
     manager.setup_logging()
     manager.setup_config()
+
+    app = mainApp()
+    app.run()
