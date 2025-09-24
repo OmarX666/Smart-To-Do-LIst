@@ -20,7 +20,10 @@ class CreatingAssets():
         self.config_path = config_path
         self.log_path = log_path
 
-        # Create the assets folder if it does not exist
+    def create_dir(self) -> None:
+        """
+            Creates the assets directory
+        """
         os.makedirs(self.assets_folder)
 
     def create_logging(self) -> None:
@@ -143,15 +146,16 @@ class JsonManager():
                 self.logger.info("Config Loaded.")
                 return data
 
-    def add_data(self, data: dict) -> None:
+    def add_data(self, data_exist: dict = {}, data: dict = {}) -> None:
         """
         Adds new data to the existing JSON configuration.
         Args:
+            data_exist (dict): A dictionary containing the existing data in Json file.
             data (dict): A dictionary containing the new data to be added.
         Returns:
             None
         """
-        data_exist = self.load_config()
+
         data_exist.update(data)
         with open(self.json_path, "w", encoding="utf-8") as file:
             json.dump(data_exist, file, indent=4)
@@ -174,9 +178,11 @@ class JsonManager():
         else:
             self.logger.warning("Key Not Found In Config.")
 
-class setup_environment(DbManager, JsonManager):
+class Setup_environment(DbManager, JsonManager):
     def __init__(self, db_path, config_path):
-        super().__init__(db_path, config_path)
+        DbManager.__init__(self, db_path)
+        JsonManager.__init__(self, config_path)
+
         self.logger = logging.getLogger("setup_environment")
         self.logger.info("Environment setup completed")
         
@@ -194,7 +200,7 @@ class setup_environment(DbManager, JsonManager):
             }
         }
 
-        self.add_data(initial_config)
+        self.add_data(data_exist=initial_config)
         self.logger.info("Config file environment setup completed")
 
     def setup_db(self) -> None:
@@ -225,14 +231,15 @@ def main():
     not os.path.exists(DB_PATH) or \
     not os.path.exists(CONFIG_PATH):
 
+        manager.create_dir()
         manager.create_logging()
         manager.create_db()
         manager.create_config()
 
-        setup_env = setup_environment(DB_PATH, CONFIG_PATH)
+        setup_env = Setup_environment(DB_PATH, CONFIG_PATH)
         setup_env.setup_db()
         setup_env.setup_config()
-    
+
     elif not os.path.exists(LOGS_PATH): # To avoid clearing Json file if logging file is not created
         manager.create_logging()
 
