@@ -60,6 +60,11 @@ class DbManager():
         self.db_path = db_path
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
+
+        # Enable foreign key constraints
+        self.cursor.execute("PRAGMA foreign_keys = ON;")
+        self.conn.commit()
+        
         self.logger = logging.getLogger("DbManager")
 
     def create_table(self, table_name, columns: dict) -> None:
@@ -206,11 +211,23 @@ class Setup_environment(DbManager, JsonManager):
     def setup_db(self) -> None:
         """ Setup database file """
 
+        # # Enable foreign keys first
+        # self.conn.execute("PRAGMA foreign_keys = ON;")
+        
         self.create_table("users", {
             "ID": "INTEGER PRIMARY KEY",
-            "Username": "TEXT",
-            "Email": "TEXT",
-            "Password": "TEXT",
+            "Username": "TEXT NOT NULL UNIQUE",
+            "Email": "TEXT NOT NULL UNIQUE",
+            "Password": "TEXT NOT NULL",
+        })
+
+        self.create_table("Users_Tasks", {
+            "Task_ID": "INTEGER PRIMARY KEY",
+            "User_ID": "INTEGER NOT NULL",
+            "Task_Name": "TEXT",
+            "Due_Date": "TEXT",
+            "Status": "TEXT",
+            "FOREIGN KEY (User_ID)": "REFERENCES users(ID)"
         })
 
         self.logger.info("Database file environment setup completed")
