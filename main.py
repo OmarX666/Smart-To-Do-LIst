@@ -64,7 +64,7 @@ class DbManager():
         # Enable foreign key constraints
         self.cursor.execute("PRAGMA foreign_keys = ON;")
         self.conn.commit()
-        
+
         self.logger = logging.getLogger("DbManager")
 
     def create_table(self, table_name, columns: dict) -> None:
@@ -211,9 +211,6 @@ class Setup_environment(DbManager, JsonManager):
     def setup_db(self) -> None:
         """ Setup database file """
 
-        # # Enable foreign keys first
-        # self.conn.execute("PRAGMA foreign_keys = ON;")
-        
         self.create_table("users", {
             "ID": "INTEGER PRIMARY KEY",
             "Username": "TEXT NOT NULL UNIQUE",
