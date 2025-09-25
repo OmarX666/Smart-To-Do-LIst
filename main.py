@@ -222,6 +222,8 @@ class Setup_environment(DbManager, JsonManager):
             "Task_ID": "INTEGER PRIMARY KEY",
             "User_ID": "INTEGER NOT NULL",
             "Task_Name": "TEXT",
+            "Description": "TEXT",
+            "Priority": "TEXT",
             "Due_Date": "TEXT",
             "Status": "TEXT",
             "FOREIGN KEY (User_ID)": "REFERENCES users(ID)"
